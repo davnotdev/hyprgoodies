@@ -66,18 +66,26 @@ pub fn monitor_pop_absolute(
     let monitor_workspaces = data
         .workspaces
         .iter()
-        .filter(|w| w.monitor_id == Some(target))
+        .filter_map(|w| (w.monitor_id == Some(target)).then_some(w.id))
         .collect::<Vec<_>>();
-    let old_new_workspace_map = monitor_workspaces
+    let old_new_workspace_map = instance
+        .layout
         .iter()
         .enumerate()
         .map(|(idx, workspace)| {
-            let old = instance.layout.get(idx).copied().unwrap_or(max_workspace);
+            let old = monitor_workspaces
+                .get(idx)
+                .copied()
+                .unwrap_or(max_workspace);
             max_workspace += 1;
-            (old, workspace.id)
+            (old, *workspace)
         })
         .collect::<HashMap<_, _>>();
+
+    eprintln!("{:?} {:?}", monitor_workspaces, old_new_workspace_map);
+
     for workspace in instance.workspaces.iter() {
+        eprintln!("{:?}", workspace);
         let new_workspace = old_new_workspace_map[&workspace.original_workspace];
         workspace_pop(data, workspace, Some(new_workspace))?;
     }

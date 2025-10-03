@@ -15,7 +15,7 @@ impl StashedInstance {
     pub fn write(self, name: &str) -> Result<()> {
         Self::setup_directories()?;
 
-        let data = ron::to_string(&self)?;
+        let data = serde_json::to_string(&self)?;
         fs::write(Self::stash_path(name)?, data).map_err(StashError::IOError)?;
 
         Ok(())
@@ -23,7 +23,7 @@ impl StashedInstance {
 
     pub fn new_from_name(name: &str) -> Result<Self> {
         let data = fs::read_to_string(Self::stash_path(name)?)?;
-        let stashed = ron::from_str(&data)?;
+        let stashed = serde_json::from_str(&data)?;
         Ok(stashed)
     }
 

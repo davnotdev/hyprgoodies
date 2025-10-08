@@ -10,6 +10,8 @@ pub enum StashError {
     MismatchedPopType,
     #[error("Unexpected missing active monitor and workspace")]
     NoActiveMonitorWorkspace,
+    #[error("A session has already been stashed under the name {0}")]
+    AlreadyStashed(String),
     #[error("Monitor {0} not found")]
     MonitorNotFound(MonitorId),
     #[error("Multiple dispatch errors")]

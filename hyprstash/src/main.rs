@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{ArgAction, Parser, Subcommand};
 use hyprland::{
     dispatch::*,
     prelude::*,
@@ -62,6 +62,7 @@ enum Commands {
     StashEverything {
         name: String,
     },
+    List,
     // TODO: Implement Generic Pop
     PopWorkspace {
         name: String,
@@ -73,17 +74,17 @@ enum Commands {
         #[arg(long)]
         target: Option<MonitorId>,
 
-        #[arg(long)]
-        relative: Option<bool>,
+        #[arg(long, action = ArgAction::SetTrue)]
+        relative: bool,
     },
     PopSession {
         name: String,
 
-        #[arg(long)]
-        relative: Option<bool>,
+        #[arg(long, action = ArgAction::SetTrue)]
+        relative: bool,
 
-        #[arg(long)]
-        no_missing_monitors: Option<bool>,
+        #[arg(long, action = ArgAction::SetTrue)]
+        no_missing_monitors: bool,
     },
     Clear {
         name: Option<String>,
@@ -97,6 +98,8 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::StashWorkspace { name, workspace } => {
+            StashedInstance::check_already_stashed(&name)?;
+
             let (instance, dispatch_error) = workspace_stash(
                 &data,
                 workspace.unwrap_or(data.active_workspace),
@@ -110,6 +113,8 @@ fn main() -> Result<()> {
             }
         }
         Commands::StashMonitor { name, monitor } => {
+            StashedInstance::check_already_stashed(&name)?;
+
             let (instance, dispatch_error) = monitor_stash(
                 &data,
                 monitor.unwrap_or(data.active_monitor),
@@ -123,6 +128,8 @@ fn main() -> Result<()> {
             }
         }
         Commands::StashEverything { name } => {
+            StashedInstance::check_already_stashed(&name)?;
+
             let (instance, dispatch_error) =
                 everything_stash(&data, cli.stash_location.unwrap_or(DEFAULT_STASH_LOCATION))?;
             StashedInstance::Everything(instance).write(&name)?;
@@ -130,6 +137,11 @@ fn main() -> Result<()> {
             if let Some(errors) = dispatch_error {
                 errors.print_errors();
                 todo!()
+            }
+        }
+        Commands::List => {
+            for entry in StashedInstance::list_instances()? {
+                println!("{}", entry);
             }
         }
         Commands::PopWorkspace { name, target } => {
@@ -145,7 +157,6 @@ fn main() -> Result<()> {
             target,
             relative,
         } => {
-            let relative = relative.unwrap_or_default();
             let instance = StashedInstance::new_from_name(&name)?;
             let StashedInstance::Monitor(stashed_monitor) = instance else {
                 return Err(StashError::MismatchedPopType.into());
@@ -162,8 +173,6 @@ fn main() -> Result<()> {
             relative,
             no_missing_monitors,
         } => {
-            let relative = relative.unwrap_or_default();
-            let no_missing_monitors = no_missing_monitors.unwrap_or_default();
             let instance = StashedInstance::new_from_name(&name)?;
             let StashedInstance::Everything(stashed_session) = instance else {
                 return Err(StashError::MismatchedPopType.into());

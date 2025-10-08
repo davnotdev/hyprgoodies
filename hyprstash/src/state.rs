@@ -12,6 +12,20 @@ pub enum StashedInstance {
 }
 
 impl StashedInstance {
+    pub fn check_already_stashed(name: &str) -> Result<()> {
+        let path = Self::stash_path(name)?;
+        (!fs::exists(&path)?)
+            .then_some(())
+            .ok_or(StashError::AlreadyStashed(name.to_owned()).into())
+    }
+
+    pub fn list_instances() -> Result<Vec<String>> {
+        let list = fs::read_dir(STASH_PATH)?
+            .map(|entry| Ok(entry?.file_name().to_str().unwrap().to_string()))
+            .collect::<Result<Vec<_>>>()?;
+        Ok(list)
+    }
+
     pub fn write(self, name: &str) -> Result<()> {
         Self::setup_directories()?;
 

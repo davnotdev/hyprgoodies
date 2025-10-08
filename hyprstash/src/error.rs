@@ -33,6 +33,11 @@ impl DispatchError {
     }
 
     pub fn print_errors(self) {
-        todo!("{:?}", self.0)
+        if !self.0.is_empty() {
+            eprintln!("Completed operation, but with the following dispatch errors:");
+            for error in self.0 {
+                eprintln!("\t{}", error)
+            }
+        }
     }
 }

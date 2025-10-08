@@ -8,21 +8,6 @@ use hyprland::{
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
-//  - stash workspace
-//      - pops into target workspace
-//  - stash Monitor
-//      - pops onto target monitor
-//      - pops onto previous monitor / workspace configuration
-//          - moved workspaces get existing windows moved into replacement
-//  - stash everything
-//      - pops all stashed monitor / workspace configuration
-//          - moved workspaces get existing windows moved into replacement
-//  - pop stash
-//  - clear workspace
-//
-//  - when workspaces need to be rearranged,
-//
-
 mod data;
 mod error;
 mod stashes;
@@ -109,7 +94,6 @@ fn main() -> Result<()> {
 
             if let Some(errors) = dispatch_error {
                 errors.print_errors();
-                todo!()
             }
         }
         Commands::StashMonitor { name, monitor } => {
@@ -124,7 +108,6 @@ fn main() -> Result<()> {
 
             if let Some(errors) = dispatch_error {
                 errors.print_errors();
-                todo!()
             }
         }
         Commands::StashEverything { name } => {
@@ -136,7 +119,6 @@ fn main() -> Result<()> {
 
             if let Some(errors) = dispatch_error {
                 errors.print_errors();
-                todo!()
             }
         }
         Commands::List => {

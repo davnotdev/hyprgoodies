@@ -53,9 +53,9 @@ pub fn everything_pop(
 
     for monitor in instance.monitors.iter() {
         if missing_monitors.contains(&monitor.original_monitor) || relative {
-            monitor_pop_relative(data, monitor)?;
+            monitor_pop_relative(data, monitor, false)?;
         } else {
-            monitor_pop_absolute(data, monitor, None)?;
+            monitor_pop_relative(data, monitor, true)?;
         }
     }
 

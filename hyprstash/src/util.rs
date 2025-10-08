@@ -21,3 +21,11 @@ pub fn move_clients_to_workspace(
         Some(DispatchError(errors))
     }
 }
+
+pub fn move_workspace_to_monitor(workspace: WorkspaceId, monitor: MonitorId) -> Result<()> {
+    Dispatch::call(DispatchType::MoveWorkspaceToMonitor(
+        WorkspaceIdentifier::Id(workspace),
+        MonitorIdentifier::Id(monitor),
+    ))?;
+    Ok(())
+}

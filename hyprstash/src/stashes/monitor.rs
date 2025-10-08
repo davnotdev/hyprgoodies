@@ -45,7 +45,7 @@ pub fn monitor_stash(
     let stashed = StashedMonitor {
         workspaces: stashed_workspaces,
         layout,
-        original_monitor: data.active_monitor,
+        original_monitor: monitor,
         stashed_location: stash_workspace,
     };
 
@@ -94,9 +94,25 @@ pub fn monitor_pop_absolute(
     Ok(())
 }
 
-pub fn monitor_pop_relative(data: &Data, instance: &StashedMonitor) -> Result<()> {
+pub fn monitor_pop_relative(
+    data: &Data,
+    instance: &StashedMonitor,
+    always_move_to_monitor: bool,
+) -> Result<()> {
     for workspace in instance.workspaces.iter() {
+        // If that workspace does not exist, move the new workspace to that monitor.
+        let move_to_monitor = (!data
+            .workspaces
+            .iter()
+            .any(|w| w.id == workspace.original_workspace))
+            || always_move_to_monitor;
+
         workspace_pop(data, workspace, None)?;
+
+        if move_to_monitor {
+            let _ =
+                move_workspace_to_monitor(workspace.original_workspace, instance.original_monitor);
+        }
     }
 
     Ok(())

@@ -151,7 +151,7 @@ fn main() -> Result<()> {
                 return Err(StashError::MismatchedPopType.into());
             };
             if relative {
-                monitor_pop_relative(&data, &stashed_monitor)?;
+                monitor_pop_relative(&data, &stashed_monitor, false)?;
             } else {
                 monitor_pop_absolute(&data, &stashed_monitor, target)?;
             }

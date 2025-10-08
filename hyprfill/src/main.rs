@@ -70,7 +70,7 @@ fn main() -> Result<()> {
             println!("ID: NAME\tDESCRIPTION");
             println!("-------------------------------");
             for monitor in monitors {
-                eprintln!(
+                println!(
                     "{:02}: {:010}\t{}",
                     monitor.id, monitor.name, monitor.description
                 );

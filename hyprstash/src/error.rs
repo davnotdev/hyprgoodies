@@ -27,10 +27,10 @@ impl DispatchError {
     }
 
     pub fn into_optional(self) -> Option<Self> {
-        self.0.is_empty().then_some(self)
+        (!self.0.is_empty()).then_some(self)
     }
 
     pub fn print_errors(self) {
-        todo!()
+        todo!("{:?}", self.0)
     }
 }

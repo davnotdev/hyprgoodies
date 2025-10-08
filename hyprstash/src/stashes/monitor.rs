@@ -5,6 +5,7 @@ pub struct StashedMonitor {
     pub workspaces: Vec<StashedWorkspace>,
     pub layout: Vec<WorkspaceId>,
     pub original_monitor: MonitorId,
+    pub stashed_location: WorkspaceId,
 }
 
 pub fn monitor_stash(
@@ -45,6 +46,7 @@ pub fn monitor_stash(
         workspaces: stashed_workspaces,
         layout,
         original_monitor: data.active_monitor,
+        stashed_location: stash_workspace,
     };
 
     Ok((stashed, dispatch_errors.into_optional()))
@@ -60,13 +62,15 @@ pub fn monitor_pop_absolute(
     let mut max_workspace = data
         .workspaces
         .iter()
-        .map(|w| w.id)
+        .filter_map(|w| (w.id != instance.stashed_location).then_some(w.id))
         .max()
         .unwrap_or(WorkspaceId::default());
     let monitor_workspaces = data
         .workspaces
         .iter()
-        .filter_map(|w| (w.monitor_id == Some(target)).then_some(w.id))
+        .filter_map(|w| {
+            (w.monitor_id == Some(target) && w.id != instance.stashed_location).then_some(w.id)
+        })
         .collect::<Vec<_>>();
     let old_new_workspace_map = instance
         .layout
@@ -78,14 +82,11 @@ pub fn monitor_pop_absolute(
                 .copied()
                 .unwrap_or(max_workspace);
             max_workspace += 1;
-            (old, *workspace)
+            (*workspace, old)
         })
         .collect::<HashMap<_, _>>();
 
-    eprintln!("{:?} {:?}", monitor_workspaces, old_new_workspace_map);
-
     for workspace in instance.workspaces.iter() {
-        eprintln!("{:?}", workspace);
         let new_workspace = old_new_workspace_map[&workspace.original_workspace];
         workspace_pop(data, workspace, Some(new_workspace))?;
     }

@@ -1,14 +1,14 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use fork::daemon;
 use hyprland::{
     data::*,
     dispatch::*,
+    event_listener::*,
     prelude::*,
     shared::{MonitorId, WorkspaceId},
 };
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, process::Command};
+use std::{collections::HashSet, process::Command, sync::mpsc, thread};
 
 mod config;
 mod error;
@@ -53,7 +53,12 @@ fn main() -> Result<()> {
             execute_fill(&config, &resolved_workspaces)?;
         }
         Commands::Setup => {
-            Config::write_default_config(cli.config)?;
+            let res = Config::setup_with_default_config(cli.config)?;
+            if let Some(path) = res {
+                eprintln!("Wrote default config to {}", path);
+            } else {
+                eprintln!("Existing config, skipping");
+            }
         }
         Commands::ExampleConfig => {
             let ex = Config::example_config()?;
@@ -76,6 +81,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+#[derive(Debug, Clone)]
 pub struct WorkspaceFill {
     id: WorkspaceId,
     monitor: MonitorId,
@@ -141,7 +147,7 @@ fn validate_fill(config: &Config, monitors: &Monitors) -> Result<Vec<WorkspaceFi
     if !notfound.is_empty() {
         let err = notfound
             .into_iter()
-            .fold(String::new(), |acc, nf| acc + ", " + &nf);
+            .fold(String::new(), |acc, nf| nf + ", " + &acc);
         return Err(FillError::FollowingNotFound(err).into());
     }
 
@@ -168,21 +174,40 @@ fn execute_fill(config: &Config, resolved_workspaces: &[WorkspaceFill]) -> Resul
         .clone()
         .unwrap_or(vec![DEFAULT_COMMAND.to_string()]);
 
+    let mut processes = vec![];
+
+    let (tx, rx) = mpsc::channel();
+
+    // Waiting for N window open events is a good enough heuristic.
+    thread::spawn(move || {
+        let mut listener = EventListener::new();
+        listener.add_window_opened_handler(move |_| {
+            let _ = tx.send(());
+        });
+        listener.start_listener().unwrap();
+    });
+
     for workspace in resolved_workspaces {
         let command_list = workspace.command.as_ref().unwrap_or(&default_command);
-        let _ = daemon(false, false);
         let proc = Command::new(&command_list[0])
             .args(&command_list[1..])
             .spawn()?;
         let pid = proc.id();
+        processes.push((workspace.id, workspace.monitor, pid));
+    }
 
-        Dispatch::call(DispatchType::FocusMonitor(MonitorIdentifier::Id(
-            workspace.monitor,
-        )))?;
-        Dispatch::call(DispatchType::MoveToWorkspace(
-            WorkspaceIdentifierWithSpecial::Id(workspace.id),
+    let _ = rx.iter().take(processes.len()).collect::<Vec<_>>();
+
+    for (workspace_id, monitor_id, pid) in processes {
+        Dispatch::call(DispatchType::MoveWorkspaceToMonitor(
+            WorkspaceIdentifier::Id(workspace_id),
+            MonitorIdentifier::Id(monitor_id),
+        ))?;
+        Dispatch::call(DispatchType::MoveToWorkspaceSilent(
+            WorkspaceIdentifierWithSpecial::Id(workspace_id),
             Some(WindowIdentifier::ProcessId(pid)),
         ))?;
     }
+
     Ok(())
 }

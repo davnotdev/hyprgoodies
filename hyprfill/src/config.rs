@@ -41,13 +41,16 @@ impl Config {
         Ok(config)
     }
 
-    pub fn write_default_config(config_path: Option<String>) -> Result<()> {
+    pub fn setup_with_default_config(config_path: Option<String>) -> Result<Option<String>> {
         let config_path = Self::resolve_config_path(config_path)?;
 
-        let data = serde_json::to_string(&Config::default())?;
-        fs::write(config_path, data)?;
-
-        Ok(())
+        if !fs::exists(&config_path)? {
+            let data = serde_json::to_string_pretty(&Config::default())?;
+            fs::write(&config_path, data)?;
+            Ok(Some(config_path))
+        } else {
+            Ok(None)
+        }
     }
 
     pub fn example_config() -> Result<String> {
@@ -55,14 +58,14 @@ impl Config {
             defaultcommand: Some(vec!["sinkgui".to_owned()]),
             workspaces: vec![
                 WorkspaceConfig {
-                    id: 0,
+                    id: 1,
                     monitorbyid: Some(2),
                     monitorbyname: None,
                     monitorbydesc: None,
                     commands: None,
                 },
                 WorkspaceConfig {
-                    id: 1,
+                    id: 2,
                     monitorbyid: None,
                     monitorbyname: Some("eDP-1".to_owned()),
                     monitorbydesc: None,
@@ -73,7 +76,7 @@ impl Config {
                     ]),
                 },
                 WorkspaceConfig {
-                    id: 2,
+                    id: 3,
                     monitorbyid: None,
                     monitorbyname: None,
                     monitorbydesc: Some("Microstep MSI MP275Q PC3M255201432".to_owned()),

@@ -10,8 +10,13 @@ As a college student, I created these tools to tackle the following environment:
 
 ## Installation / Setup
 
-You can build everything using `cargo`.
-`sinkgui` uses `make` and requires the `X11` headers to be installed.
+To compile the codebase, use either `cargo b` or `make`
+
+> Using `make` compiles `sinkgui` which requires X11 headers to be installed.
+
+There is no special installation process, just copy the binaries from `target/`.
+To install everything, use `make install`.
+I recommend using `DESTDIR="$HOME/.local" make install`.
 
 ## `hyprstash`
 

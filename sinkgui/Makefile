@@ -1,4 +1,5 @@
 NAME = sinkgui
+DESTDIR = /usr/local
 
 all: $(NAME)
 

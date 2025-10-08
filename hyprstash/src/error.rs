@@ -12,8 +12,6 @@ pub enum StashError {
     NoActiveMonitorWorkspace,
     #[error("Monitor {0} not found")]
     MonitorNotFound(MonitorId),
-    #[error("Hyprland IPC error {0}")]
-    Hyprland(HyprError),
     #[error("Multiple dispatch errors")]
     Dispatch(DispatchError),
     #[error("IO {0}")]

@@ -14,8 +14,7 @@ pub struct Data {
 
 impl Data {
     pub fn new() -> Result<Self> {
-        let (active_monitor, active_workspace) = Monitors::get()
-            .map_err(StashError::Hyprland)?
+        let (active_monitor, active_workspace) = Monitors::get()?
             .into_iter()
             .find_map(|monitor| {
                 monitor
@@ -24,9 +23,9 @@ impl Data {
             })
             .ok_or(StashError::NoActiveMonitorWorkspace)?;
 
-        let monitors = Monitors::get().map_err(StashError::Hyprland)?;
-        let clients = Clients::get().map_err(StashError::Hyprland)?;
-        let workspaces = Workspaces::get().map_err(StashError::Hyprland)?;
+        let monitors = Monitors::get()?;
+        let clients = Clients::get()?;
+        let workspaces = Workspaces::get()?;
 
         Ok(Data {
             monitors,

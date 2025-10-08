@@ -6,7 +6,7 @@ void run() {
 	Display *dpy = XOpenDisplay(NULL);
 	Window root = XDefaultRootWindow(dpy);
 
-	Window window = XCreateSimpleWindow(dpy, root, 0, 0, 500, 500, 0, 0, 0xFFFFFF);
+	Window window = XCreateSimpleWindow(dpy, root, 0, 0, 500, 500, 0, 0, 0x222228);
 	XSelectInput(dpy, window, KeyPressMask | ButtonPress);
 	XMapWindow(dpy, window);
 

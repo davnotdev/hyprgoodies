@@ -1,4 +1,6 @@
 This application is a stock GUI that closes on user interaction.
 
 Install Xlib development headers.
-Compile using `cc main.c -o sinkgui -lX11`.
+Compile using `make` or `cc main.c -o sinkgui -lX11`.
+
+I recommand `DESTDIR="$HOME/.local" make install`.

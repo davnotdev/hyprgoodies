@@ -199,13 +199,13 @@ fn execute_fill(config: &Config, resolved_workspaces: &[WorkspaceFill]) -> Resul
     let _ = rx.iter().take(processes.len()).collect::<Vec<_>>();
 
     for (workspace_id, monitor_id, pid) in processes {
-        Dispatch::call(DispatchType::MoveWorkspaceToMonitor(
-            WorkspaceIdentifier::Id(workspace_id),
-            MonitorIdentifier::Id(monitor_id),
-        ))?;
         Dispatch::call(DispatchType::MoveToWorkspaceSilent(
             WorkspaceIdentifierWithSpecial::Id(workspace_id),
             Some(WindowIdentifier::ProcessId(pid)),
+        ))?;
+        Dispatch::call(DispatchType::MoveWorkspaceToMonitor(
+            WorkspaceIdentifier::Id(workspace_id),
+            MonitorIdentifier::Id(monitor_id),
         ))?;
     }
 

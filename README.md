@@ -55,6 +55,8 @@ hyprstash list
 hyprstash clear
 ```
 
+![gif here](./assets/hyprstash.gif)
+
 ## `hyprfill`
 
 `hyprfill` places workspaces and applications onto the correct monitors given a configuration file.
@@ -65,6 +67,8 @@ You can use `hyprfill --help` to get help on writing a configuration.
 By default, `hyprfill` expects `sinkgui`, a separate program to be installed.
 
 > Because of IPC limitations, `hyprfill` should only ever spawn simple applications with one window.
+
+![gif here](./assets/hyprfill.gif)
 
 ### `sinkgui`
 
